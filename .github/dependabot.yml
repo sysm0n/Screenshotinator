@@ -1,11 +1,32 @@
 version: 2
 updates:
+  # Go modules: minor/patch only, one PR per week. Major bumps are done by hand.
   - package-ecosystem: gomod
     directory: /
     schedule: { interval: weekly }
+    groups:
+      go-deps:
+        patterns: ["*"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Frontend: minor/patch only. Majors (React, Vite, Tailwind, TypeScript, ...) need code
+  # changes and often must move together, so they are upgraded manually.
   - package-ecosystem: npm
     directory: /frontend
     schedule: { interval: weekly }
+    groups:
+      frontend-deps:
+        patterns: ["*"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions: one PR for all actions, majors included (CI shows if one breaks).
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
+    groups:
+      actions:
+        patterns: ["*"]
