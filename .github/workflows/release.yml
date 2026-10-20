@@ -4,6 +4,10 @@ on:
   push:
     tags: ["v*"]
 
+env:
+  # "|" falls back to fetching straight from the VCS on ANY proxy error, not just 404.
+  GOPROXY: https://proxy.golang.org|direct
+
 permissions:
   contents: write
 
@@ -25,6 +29,15 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: Download Go modules (retry on proxy errors)
+        shell: bash
+        run: |
+          for i in 1 2 3 4 5; do
+            go mod download && exit 0
+            echo "go mod download failed (attempt $i), retrying..."
+            sleep $((i * 5))
+          done
+          exit 1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
